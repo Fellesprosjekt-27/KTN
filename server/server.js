@@ -52,20 +52,10 @@ Server.prototype.logout = function(user) {
   user.socket.end();
 };
 
-Server.prototype.sendHistory = function(user) {
-  var payload = {
-    timestamp: Date.now(),
-    response: 'history',
-    content: this.history
-  };
-  
-  user.socket.write(JSON.stringify(payload));
-};
-
 Server.prototype.handleRequest = function(client, payload) {
   var command = payload.request;
   if (this.authCommands.indexOf(command) > -1 && !client.username) {
-    return this.sendError('Not authenticated'); 
+    return client.sendError('Not authenticated'); 
   }
 
   switch (command) {
@@ -73,8 +63,7 @@ Server.prototype.handleRequest = function(client, payload) {
       this.sendMessage(payload.content, client);
       break;
     case 'login':
-      client.login(payload.content);
-      this.sendHistory(client);
+      client.login(payload.content, this.history);
       break;
     case 'logout':
       this.logout(client);

@@ -4,8 +4,14 @@ function ServerClient(socket) {
   this.socket = socket;
 }
 
-ServerClient.prototype.login = function(username) {
-  this.username = username;
+ServerClient.prototype.login = function(username, history) {
+  var validUsername = /^[\w]+$/
+  if (username.match(validUsername)) {
+    this.username = username;
+    this.sendHistory(history);
+  } else {
+    this.sendError('Usernames can only contain numbers and letters from A-Z') 
+  }
 };
 
 ServerClient.prototype.sendInfo = function(content) {
@@ -26,6 +32,16 @@ ServerClient.prototype.sendError = function(error) {
   };
 
   return this.socket.write(JSON.stringify(response));
+};
+
+ServerClient.prototype.sendHistory = function(history) {
+  var payload = {
+    timestamp: Date.now(),
+    response: 'history',
+    content: history
+  };
+  
+  this.socket.write(JSON.stringify(payload));
 };
 
 module.exports = ServerClient;

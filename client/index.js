@@ -53,3 +53,9 @@ client.on('info', function(info) {
   var message = chalk.magenta.bold(info);
   output(message);
 });
+
+client.on('error', function(error) {
+  var message = chalk.red.bold(error);
+  output(message);
+  process.exit(1);
+});
