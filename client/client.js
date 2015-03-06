@@ -10,6 +10,14 @@ function Client() {
 }
 util.inherits(Client, EventEmitter);
 
+Client.prototype.sendCommand = function(command) {
+  var payload = {
+    request: command
+  };
+
+  this.socket.write(JSON.stringify(payload));
+};
+
 Client.prototype.sendMessage = function(message) {
   var payload = {
     request: 'msg',

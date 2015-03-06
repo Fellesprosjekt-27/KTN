@@ -1,36 +1,10 @@
 var net = require('net');
-
-function ServerClient(socket) {
-  this.socket = socket;
-}
-
-ServerClient.prototype.login = function(username) {
-  console.log('logged in', username);
-  this.username = username;
-};
-
-ServerClient.prototype.sendInfo = function(content) {
-  var response = {
-    timestamp: Date.now(),
-    response: 'info',
-    content: content
-  };
-  
-  this.socket.write(JSON.stringify(response));
-};
-
-ServerClient.prototype.sendError = function(error) {
-  var response = {
-    timestamp: Date.now(),
-    response: 'error',
-    content: error
-  };
-
-  return this.socket.write(JSON.stringify(response));
-};
+var ServerClient = require('./server-client');
 
 function Server() {
   this.allowedCommands = ['msg', 'help', 'names', 'login', 'logout'];
+  this.authCommands = ['msg', 'names', 'logout'];
+
   this.clients = [];
   this.history = [];
 
@@ -65,7 +39,7 @@ Server.prototype.listNames = function(user) {
     return client.username;
   });
   
-  client.sendInfo(content);
+  user.sendInfo(names.join(', '));
 };
 
 Server.prototype.listCommands = function(user) {
@@ -75,6 +49,7 @@ Server.prototype.listCommands = function(user) {
 
 Server.prototype.logout = function(user) {
   this.clients.splice(this.clients.indexOf(user), 1);
+  user.socket.end();
 };
 
 Server.prototype.sendHistory = function(user) {
@@ -88,8 +63,12 @@ Server.prototype.sendHistory = function(user) {
 };
 
 Server.prototype.handleRequest = function(client, payload) {
-  console.log('hei', payload);
-  switch (payload.request) {
+  var command = payload.request;
+  if (this.authCommands.indexOf(command) > -1 && !client.username) {
+    return this.sendError('Not authenticated'); 
+  }
+
+  switch (command) {
     case 'msg':
       this.sendMessage(payload.content, client);
       break;

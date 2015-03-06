@@ -21,7 +21,14 @@ client.on('connected', function() {
 });
 
 rl.on('line', function(line) {
-  client.sendMessage(line.trim());
+  line = line.trim();
+  if (line.charAt(0) === '/') {
+    var command = line.slice(1);
+    client.sendCommand(command);
+  } else {
+    client.sendMessage(line);
+  }
+
   rl.prompt();
 });
 
@@ -42,3 +49,7 @@ client.on('loggedIn', function(history) {
   rl.prompt(); 
 });
 
+client.on('info', function(info) {
+  var message = chalk.magenta.bold(info);
+  output(message);
+});
