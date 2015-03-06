@@ -28,7 +28,7 @@ Client.prototype.handlePayload = function(payload) {
       this.emit('error', payload.content);
       break;
     case 'message':
-      this.emit('message', payload.content, payload.sender);
+      this.emit('message', payload.content, payload.sender, payload.timestamp);
       break;
     case 'info':
       this.emit('info', payload.content);

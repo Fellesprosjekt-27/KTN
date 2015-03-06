@@ -42,24 +42,22 @@ function Server() {
 }
 
 Server.prototype.sendMessage = function(message, author) {
-  console.log('author', author.username);
   if (!author.username) return; // User not logged in
+  
+  var payload = {
+    timestamp: Date.now(),
+    sender: author.username,
+    response: 'message',
+    content: message
+  };
+  this.history.push(payload);
 
   this.clients.forEach(function(client) {
     // Only send to logged in users
     if (client !== author && client.username) {
-      var payload = {
-        timestamp: Date.now(),
-        sender: author.username,
-        response: 'message',
-        content: message
-      };
-      
-      this.history.push(payload);
-      console.log('writing', payload);
       client.socket.write(JSON.stringify(payload));
     }
-  }.bind(this));
+  });
 };
 
 Server.prototype.listNames = function(user) {
@@ -79,6 +77,16 @@ Server.prototype.logout = function(user) {
   this.clients.splice(this.clients.indexOf(user), 1);
 };
 
+Server.prototype.sendHistory = function(user) {
+  var payload = {
+    timestamp: Date.now(),
+    response: 'history',
+    content: this.history
+  };
+  
+  user.socket.write(JSON.stringify(payload));
+};
+
 Server.prototype.handleRequest = function(client, payload) {
   console.log('hei', payload);
   switch (payload.request) {
@@ -87,6 +95,7 @@ Server.prototype.handleRequest = function(client, payload) {
       break;
     case 'login':
       client.login(payload.content);
+      this.sendHistory(client);
       break;
     case 'logout':
       this.logout(client);

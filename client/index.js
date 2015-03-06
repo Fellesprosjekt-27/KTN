@@ -1,6 +1,8 @@
+var moment = require('moment');
 var readline = require('readline');
+var chalk = require('chalk');
 var Client = require('./client');
-var rl = readline.createInterface(process.stdin, process.stdout);
+var rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
 var client = new Client();
 
@@ -15,20 +17,28 @@ client.on('connected', function() {
   console.log('connected');;
   rl.question('What\'s your name? ', function(username) {
     client.login(username);
-    rl.prompt(); 
   });
 });
 
 rl.on('line', function(line) {
   client.sendMessage(line.trim());
-  rl.prompt(true);
+  rl.prompt();
 });
 
-client.on('message', function(message, author) {
-  output(author + ': ' + message);
-});
+function printMessage(message, author, timestamp) {
+  var time = chalk.yellow(moment(timestamp).format('HH:mm') + ' ');
+  var user = chalk.green('[' + author + '] ');
+  output(time + user + message);
+}
+
+client.on('message', printMessage);
 
 client.on('loggedIn', function(history) {
-  console.log('got hist', history);
+  rl.setPrompt(chalk.cyan('[' + client.username + '] '));
+  history.forEach(function(message) {
+    printMessage(message.content, message.sender, message.timestamp);
+  });
+
+  rl.prompt(); 
 });
 
