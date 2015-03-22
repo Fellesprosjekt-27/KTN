@@ -4,7 +4,10 @@ var chalk = require('chalk');
 var Client = require('./client');
 var rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-var client = new Client();
+var host = process.env.HOST || 'localhost';
+var port = process.env.PORT || 3000;
+
+var client = new Client(host, port);
 
 function output(message) {
   process.stdout.clearLine();

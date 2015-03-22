@@ -2,8 +2,12 @@ var EventEmitter = require('events').EventEmitter;
 var net = require('net');
 var util = require('util');
 
-function Client() {
-  this.socket = net.connect({ port: 3000, encoding: 'utf8' }, function() {
+function Client(host, port) {
+  this.socket = net.connect({
+    host: host,
+    port: port,
+    encoding: 'utf8'
+  }, function() {
     this.attachListeners();
     this.emit('connected');
   }.bind(this));
